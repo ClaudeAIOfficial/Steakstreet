@@ -386,7 +386,7 @@ export default function StakeStreetApp() {
 
         <header className="nav shell">
           <a className="brand" href="#top" aria-label="StakeStreet home">
-            <span className="brand-word">STAKE</span><span className="brand-word brand-outline">STREET</span>
+            <img className="brand-logo" src="/stakestreet-logo.png" alt="StakeStreet" />
           </a>
           <nav className="nav-links">
             <a href="#portfolio">Portfolio</a>
@@ -566,8 +566,8 @@ export default function StakeStreetApp() {
 
       <footer className="footer">
         <div className="shell footer-inner">
-          <a className="brand footer-brand" href="#top"><span className="brand-word">STAKE</span><span className="brand-word brand-outline">STREET</span></a>
-          <div className="footer-links"><a href="#portfolio">Portfolio</a><a href="#markets">Markets</a><a href="#how">How it works</a></div>
+          <a className="brand footer-brand" href="#top" aria-label="StakeStreet home"><img className="brand-logo footer-logo" src="/stakestreet-logo.png" alt="StakeStreet" /></a>
+          <div className="footer-links"><a href="#portfolio">Portfolio</a><a href="#markets">Markets</a><a href="#how">How it works</a><a className="x-link" href="https://x.com/itsrealericlol" target="_blank" rel="noreferrer">X · @itsrealericlol ↗</a></div>
           <p>Independent protocol built on Robinhood Chain. Not affiliated with or endorsed by Robinhood Markets, Inc. Stock Tokens carry financial and jurisdictional risks.</p>
           <span className="copyright">© 2026 StakeStreet</span>
         </div>

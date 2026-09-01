@@ -90,3 +90,9 @@ This code is an initial real implementation, **not an audited production protoco
 - Add emergency procedures and public docs.
 
 Robinhood Stock Tokens are tokenised debt securities that provide economic exposure to underlying securities; they are not direct ownership of the underlying shares. StakeStreet is an independent project and must not imply endorsement or affiliation with Robinhood.
+
+## Vercel build fix (v3)
+
+This package removes the old root-level `StakeStreetApp.tsx` / `page.tsx` compatibility shims that were causing Vercel to type-check an invalid `../app/page` import. The production build also runs `scripts/cleanup-legacy.cjs` first, so stale copies of those files in an existing GitHub repo are removed in Vercel's build workspace before `next build` runs.
+
+`tsconfig.json` now scopes TypeScript checking to the actual Next.js App Router application under `app/`, preventing unused legacy compatibility files from breaking production builds.
