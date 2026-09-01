@@ -274,114 +274,205 @@ export default function StakeStreetApp() {
   }
 
   return (
-    <main>
-      <header className="nav shell">
-        <a className="brand" href="#top" aria-label="StakeStreet home">
-          <span className="brand-mark">S</span>
-          <span>StakeStreet</span>
-        </a>
-        <nav className="nav-links">
-          <a href="#markets">Markets</a>
-          <a href="#portfolio">Portfolio</a>
-          <a href="#how">How it works</a>
-        </nav>
-        <div className="nav-actions">
-          <button className={`network ${onCorrectChain ? "live" : ""}`} onClick={switchNetwork}>
-            <span className="dot" /> Robinhood Chain
-          </button>
-          <button className="wallet" onClick={connect}>{account ? shortAddress(account) : "Connect wallet"}</button>
+    <main className="site">
+      <section className="hero" id="top">
+        <div className="hero-atmosphere" aria-hidden="true">
+          <div className="hero-grid-lines" />
+          <div className="hero-orbit orbit-one" />
+          <div className="hero-orbit orbit-two" />
+          <div className="hero-glow" />
         </div>
-      </header>
 
-      <section className="hero shell" id="top">
-        <div className="hero-copy">
-          <div className="eyebrow"><span className="pulse" /> BUILT ON ROBINHOOD CHAIN</div>
-          <h1>Don&apos;t sell your winners.<br /><span>Put them to work.</span></h1>
-          <p>Stake eligible Robinhood Stock Tokens, keep your market exposure, and earn transparent onchain rewards while you hold.</p>
-          <div className="hero-buttons">
-            <a className="primary" href="#markets">Explore markets <span>↗</span></a>
-            <a className="secondary" href="#how">How StakeStreet works</a>
+        <header className="nav shell">
+          <a className="brand" href="#top" aria-label="StakeStreet home">
+            <span className="brand-word">STAKE</span><span className="brand-word brand-outline">STREET</span>
+          </a>
+          <nav className="nav-links">
+            <a href="#portfolio">Portfolio</a>
+            <a href="#markets">Markets</a>
+            <a href="#how">How it works</a>
+          </nav>
+          <div className="nav-actions">
+            <button className={`network ${onCorrectChain ? "live" : ""}`} onClick={switchNetwork}>
+              <span className="dot" /> Robinhood Chain
+            </button>
+            <button className="wallet" onClick={connect}>{account ? shortAddress(account) : "Connect wallet"}</button>
           </div>
-          <div className="trust-row"><span>Self-custody</span><i /> <span>Onchain positions</span><i /> <span>Live Robinhood data</span></div>
-        </div>
-        <div className="hero-card">
-          <div className="card-top"><span>YOUR PORTFOLIO</span><span className="live-tag">LIVE</span></div>
-          <div className="portfolio-number">{account ? money.format(portfolioValue) : "$—"}</div>
-          <div className="portfolio-sub">Detected Robinhood Stock Tokens</div>
-          <div className="mini-list">
-            {markets.slice(0, 3).map((market) => (
-              <div className="mini-row" key={market.tokenSymbol}>
-                <img src={market.logoUrl || ""} alt="" />
-                <div><b>{market.tokenSymbol}</b><span>{market.tokenName?.replace(" • Robinhood Token", "")}</span></div>
-                <div className="mini-right"><b>{market.balance == null ? "—" : `${num.format(market.balance)} shares`}</b><span>{market.price ? money.format(market.price) : "Loading"}</span></div>
+        </header>
+
+        <div className="hero-inner shell">
+          <div className="hero-main">
+            <div className="hero-label"><span>STOCK STAKING</span><span>ROBINHOOD CHAIN</span></div>
+            <h1>The yield layer<br />for your <em>stocks.</em></h1>
+          </div>
+
+          <div className="hero-bottom">
+            <div className="hero-counter">
+              <span>YOUR STOCKS, WORKING OVERTIME</span>
+              <strong>{account ? money.format(portfolioValue) : "$0.00"}</strong>
+              <small>portfolio value detected</small>
+            </div>
+            <div className="hero-actions">
+              <p>Keep exposure to the stocks you believe in while eligible Robinhood Stock Tokens earn transparent onchain rewards.</p>
+              <div className="hero-links">
+                <a href="#markets">Explore markets <b>↗</b></a>
+                <a href="#how">How it works <b>↓</b></a>
               </div>
-            ))}
+            </div>
           </div>
-          {!account && <button className="card-connect" onClick={connect}>Connect to detect your stocks</button>}
-          {account && !onCorrectChain && <button className="card-connect" onClick={switchNetwork}>Switch to Robinhood Chain</button>}
+        </div>
+
+        <div className="hero-index">00</div>
+      </section>
+
+      <section className="light-section section" id="portfolio">
+        <div className="shell section-frame">
+          <div className="section-marker">S.01</div>
+          <div className="section-heading-grid">
+            <div>
+              <span className="overline">YOUR PORTFOLIO</span>
+              <h2>Holding is no longer<br />the idle option.</h2>
+            </div>
+            <p>StakeStreet turns supported Stock Tokens into productive onchain positions without changing the asset you chose to hold.</p>
+          </div>
+
+          <div className="portfolio-showcase">
+            <div className="portfolio-visual dark-panel">
+              <div className="panel-top"><span>LIVE POSITION OVERVIEW</span><span className="live-indicator"><i /> ONCHAIN</span></div>
+              <div className="portfolio-total">{account ? money.format(portfolioValue) : "$—"}</div>
+              <span className="portfolio-caption">Detected Robinhood Stock Token value</span>
+              <div className="portfolio-lines">
+                {markets.slice(0, 3).map((market, index) => (
+                  <div className="portfolio-line" key={market.tokenSymbol}>
+                    <span className="line-index">0{index + 1}</span>
+                    <div className="asset-ident">
+                      <img src={market.logoUrl || ""} alt="" />
+                      <div><b>{market.tokenSymbol}</b><span>{market.tokenName?.replace(" • Robinhood Token", "")}</span></div>
+                    </div>
+                    <div className="asset-values">
+                      <b>{market.balance == null ? "—" : `${num.format(market.balance)} shares`}</b>
+                      <span>{market.price ? money.format(market.price) : "Loading"}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {!account && <button className="panel-action" onClick={connect}>Connect wallet <span>↗</span></button>}
+              {account && !onCorrectChain && <button className="panel-action" onClick={switchNetwork}>Switch network <span>↗</span></button>}
+            </div>
+
+            <div className="metric-grid">
+              <article><span>PORTFOLIO VALUE</span><strong>{account ? money.format(portfolioValue) : "—"}</strong><small>Total detected value</small></article>
+              <article><span>CURRENTLY STAKED</span><strong>{account ? money.format(stakedValue) : "—"}</strong><small>Principal in active vaults</small></article>
+              <article><span>REWARDS EARNED</span><strong>{account ? money.format(rewardsValue) : "—"}</strong><small>Accrued onchain rewards</small></article>
+              <article><span>NETWORK</span><strong className="accent-text">4663</strong><small>Robinhood Chain</small></article>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="stats shell" id="portfolio">
-        <div><span>Portfolio value</span><b>{account ? money.format(portfolioValue) : "—"}</b></div>
-        <div><span>Currently staked</span><b>{account ? money.format(stakedValue) : "—"}</b></div>
-        <div><span>Rewards earned</span><b>{account ? money.format(rewardsValue) : "—"}</b></div>
-        <div><span>Network</span><b className="green">Robinhood Chain</b></div>
-      </section>
+      <section className="dark-section section" id="markets">
+        <div className="shell section-frame">
+          <div className="section-marker">S.02</div>
+          <div className="section-heading-grid dark-heading">
+            <div>
+              <span className="overline">MARKETS</span>
+              <h2>Put every share<br />to work.</h2>
+            </div>
+            <p>Live Stock Token metadata and prices come from Robinhood. Yield appears only when a StakeStreet vault is deployed and funded onchain.</p>
+          </div>
 
-      <section className="markets-section shell" id="markets">
-        <div className="section-head">
-          <div><span className="kicker">STOCK STAKING</span><h2>Make every share work harder.</h2></div>
-          <p>Live Stock Token metadata and prices come directly from Robinhood. APY appears only when a real StakeStreet vault is deployed and funded.</p>
-        </div>
-        <div className="market-table-wrap">
-          <table className="market-table">
-            <thead><tr><th>Asset</th><th>Price</th><th>Your balance</th><th>APY</th><th>Reward reserve</th><th></th></tr></thead>
-            <tbody>
-              {loading && Array.from({ length: 5 }).map((_, i) => <tr key={i} className="skeleton-row"><td colSpan={6}><div /></td></tr>)}
-              {!loading && markets.map((market) => (
-                <tr key={market.tokenSymbol}>
-                  <td><div className="asset-cell"><img src={market.logoUrl || ""} alt="" /><div><b>{market.tokenSymbol}</b><span>{market.tokenName?.replace(" • Robinhood Token", "")}</span></div></div></td>
-                  <td><b>{market.price ? money.format(market.price) : "—"}</b><span className="muted">multiplier-adjusted</span></td>
-                  <td><b>{market.balance == null ? (account ? "—" : "Connect") : num.format(market.balance)}</b><span className="muted">{market.balance && market.price ? money.format(market.balance * market.price) : ""}</span></td>
-                  <td>{market.apr == null ? <span className="pending">Awaiting vault</span> : <span className="apy">{market.apr.toFixed(2)}%</span>}</td>
-                  <td><b>{market.reserve == null ? "—" : `${num.format(market.reserve)} ${market.tokenSymbol}`}</b></td>
-                  <td><button className="stake-btn" onClick={() => { setSelected(market); setAmount(""); }}>{market.vault ? "Stake" : "View"}</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+          <div className="ticker-marquee" aria-hidden="true">
+            <span>NVDA</span><i>•</i><span>AAPL</span><i>•</i><span>TSLA</span><i>•</i><span>SPY</span><i>•</i><span>QQQ</span>
+          </div>
 
-      <section className="how shell" id="how">
-        <div className="section-head"><div><span className="kicker">THE MODEL</span><h2>Hold the stock. Earn on the stock.</h2></div></div>
-        <div className="steps">
-          <article><span>01</span><div className="step-icon">◎</div><h3>Connect</h3><p>Connect an EVM wallet and StakeStreet detects eligible Robinhood Stock Tokens on chain 4663.</p></article>
-          <article><span>02</span><div className="step-icon">↘</div><h3>Stake</h3><p>Deposit Stock Tokens into a transparent vault contract. Your principal remains denominated in the same Stock Token.</p></article>
-          <article><span>03</span><div className="step-icon">↗</div><h3>Earn</h3><p>Rewards accrue block by block from the funded reward reserve. Withdraw principal or claim rewards onchain.</p></article>
+          <div className="market-table-wrap">
+            <table className="market-table">
+              <thead><tr><th>#</th><th>Asset</th><th>Price</th><th>Your balance</th><th>APY</th><th>Reward reserve</th><th></th></tr></thead>
+              <tbody>
+                {loading && Array.from({ length: 5 }).map((_, i) => <tr key={i} className="skeleton-row"><td colSpan={7}><div /></td></tr>)}
+                {!loading && markets.map((market, index) => (
+                  <tr key={market.tokenSymbol}>
+                    <td className="market-index">0{index + 1}</td>
+                    <td><div className="asset-cell"><img src={market.logoUrl || ""} alt="" /><div><b>{market.tokenSymbol}</b><span>{market.tokenName?.replace(" • Robinhood Token", "")}</span></div></div></td>
+                    <td><b>{market.price ? money.format(market.price) : "—"}</b><span className="muted">multiplier-adjusted</span></td>
+                    <td><b>{market.balance == null ? (account ? "—" : "Connect") : num.format(market.balance)}</b><span className="muted">{market.balance && market.price ? money.format(market.balance * market.price) : ""}</span></td>
+                    <td>{market.apr == null ? <span className="pending">Awaiting vault</span> : <span className="apy">{market.apr.toFixed(2)}%</span>}</td>
+                    <td><b>{market.reserve == null ? "—" : `${num.format(market.reserve)} ${market.tokenSymbol}`}</b></td>
+                    <td><button className="stake-btn" onClick={() => { setSelected(market); setAmount(""); }}>{market.vault ? "Stake ↗" : "View ↗"}</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <footer className="footer shell">
-        <div className="brand"><span className="brand-mark">S</span><span>StakeStreet</span></div>
-        <p>Independent protocol built on Robinhood Chain. Not affiliated with or endorsed by Robinhood Markets, Inc. Stock Tokens carry financial and jurisdictional risks.</p>
-        <span>© 2026 StakeStreet</span>
+      <section className="light-section section" id="how">
+        <div className="shell section-frame">
+          <div className="section-marker">S.03</div>
+          <div className="section-heading-grid">
+            <div>
+              <span className="overline">THE MECHANISM</span>
+              <h2>Three moves.<br />One position.</h2>
+            </div>
+            <p>Designed to feel as simple as holding, while every state change remains visible onchain.</p>
+          </div>
+
+          <div className="process-list">
+            <article>
+              <div className="process-number">01</div>
+              <div className="process-title"><span className="process-icon">◎</span><h3>Connect</h3></div>
+              <p>Connect an EVM wallet. StakeStreet detects supported Robinhood Stock Tokens held on chain 4663.</p>
+            </article>
+            <article>
+              <div className="process-number">02</div>
+              <div className="process-title"><span className="process-icon">↘</span><h3>Stake</h3></div>
+              <p>Deposit Stock Tokens into a transparent vault. Your principal remains denominated in the same Stock Token.</p>
+            </article>
+            <article>
+              <div className="process-number">03</div>
+              <div className="process-title"><span className="process-icon">↗</span><h3>Earn</h3></div>
+              <p>Funded rewards accrue against the position. Withdraw principal or claim earned tokens directly onchain.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="final-section">
+        <div className="shell final-inner">
+          <div className="section-marker">S.04</div>
+          <span className="overline">THE NEW HOLD</span>
+          <h2>Don&apos;t sell your winners.<br /><em>Stake them.</em></h2>
+          <div className="final-bottom">
+            <p>A new layer for stock exposure on Robinhood Chain.</p>
+            <button onClick={account ? switchNetwork : connect}>{account ? "Open your portfolio" : "Connect wallet"} <span>↗</span></button>
+          </div>
+        </div>
+      </section>
+
+      <footer className="footer">
+        <div className="shell footer-inner">
+          <a className="brand footer-brand" href="#top"><span className="brand-word">STAKE</span><span className="brand-word brand-outline">STREET</span></a>
+          <div className="footer-links"><a href="#portfolio">Portfolio</a><a href="#markets">Markets</a><a href="#how">How it works</a></div>
+          <p>Independent protocol built on Robinhood Chain. Not affiliated with or endorsed by Robinhood Markets, Inc. Stock Tokens carry financial and jurisdictional risks.</p>
+          <span className="copyright">© 2026 StakeStreet</span>
+        </div>
       </footer>
 
       {selected && (
         <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelected(null); }}>
           <div className="modal">
             <button className="close" onClick={() => setSelected(null)}>×</button>
+            <div className="modal-head-index">MARKET / {selected.tokenSymbol}</div>
             <div className="modal-asset"><img src={selected.logoUrl || ""} alt="" /><div><span>STAKE</span><h2>{selected.tokenSymbol}</h2><p>{selected.tokenName?.replace(" • Robinhood Token", "")}</p></div></div>
             <div className="modal-metrics">
               <div><span>Live price</span><b>{selected.price ? money.format(selected.price) : "—"}</b></div>
-              <div><span>Vault APY</span><b className="green">{selected.apr == null ? "—" : `${selected.apr.toFixed(2)}%`}</b></div>
+              <div><span>Vault APY</span><b className="accent-text">{selected.apr == null ? "—" : `${selected.apr.toFixed(2)}%`}</b></div>
               <div><span>Your balance</span><b>{selected.balance == null ? "—" : num.format(selected.balance)}</b></div>
             </div>
             {selected.vault ? (
               <>
-                <div className="position-box"><div><span>Currently staked</span><b>{num.format(selected.principal || 0)} {selected.tokenSymbol}</b></div><div><span>Earned</span><b className="green">{num.format(selected.earned || 0)} {selected.tokenSymbol}</b></div></div>
+                <div className="position-box"><div><span>Currently staked</span><b>{num.format(selected.principal || 0)} {selected.tokenSymbol}</b></div><div><span>Earned</span><b className="accent-text">{num.format(selected.earned || 0)} {selected.tokenSymbol}</b></div></div>
                 <label className="amount-label"><span>Amount</span><button onClick={() => setAmount(String(selected.balance || 0))}>MAX</button></label>
                 <div className="amount-input"><input inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} /><span>{selected.tokenSymbol}</span></div>
                 <div className="modal-actions"><button disabled={!!busy || !account} onClick={() => transact("stake")}>{busy === "stake" ? "Confirming…" : "Stake shares"}</button><button className="outline" disabled={!!busy || !account} onClick={() => transact("withdraw")}>Withdraw</button></div>
