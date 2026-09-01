@@ -368,3 +368,9 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   .position-box { grid-template-columns: 1fr; }
   .position-box div + div { border-left: 0; border-top: 1px solid var(--line-dark); padding-left: 0; }
 }
+
+.available { display: inline-flex; align-items: center; gap: .45rem; color: var(--green); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; }
+.available::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px rgba(197,255,76,.08); }
+.available-state span { color: var(--green); }
+.availability-action { margin-top: 1.25rem; width: 100%; min-height: 50px; border: 1px solid var(--green); background: var(--green); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; }
+.availability-action:hover { filter: brightness(.96); }

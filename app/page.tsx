@@ -378,7 +378,7 @@ export default function StakeStreetApp() {
               <span className="overline">MARKETS</span>
               <h2>Put every share<br />to work.</h2>
             </div>
-            <p>Live Stock Token metadata and prices come from Robinhood. Yield appears only when a StakeStreet vault is deployed and funded onchain.</p>
+            <p>All listed Stock Token markets are available on Robinhood Chain. Connect your wallet to view balances and access StakeStreet positions.</p>
           </div>
 
           <div className="ticker-marquee" aria-hidden="true">
@@ -387,7 +387,7 @@ export default function StakeStreetApp() {
 
           <div className="market-table-wrap">
             <table className="market-table">
-              <thead><tr><th>#</th><th>Asset</th><th>Price</th><th>Your balance</th><th>APY</th><th>Reward reserve</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Asset</th><th>Price</th><th>Your balance</th><th>Status / APY</th><th>Reward reserve</th><th></th></tr></thead>
               <tbody>
                 {loading && Array.from({ length: 5 }).map((_, i) => <tr key={i} className="skeleton-row"><td colSpan={7}><div /></td></tr>)}
                 {!loading && markets.map((market, index) => (
@@ -396,9 +396,9 @@ export default function StakeStreetApp() {
                     <td><div className="asset-cell"><img src={market.logoUrl || ""} alt="" /><div><b>{market.tokenSymbol}</b><span>{market.tokenName?.replace(" • Robinhood Token", "")}</span></div></div></td>
                     <td><b>{market.price ? money.format(market.price) : "—"}</b><span className="muted">multiplier-adjusted</span></td>
                     <td><b>{market.balance == null ? (account ? "—" : "Connect") : num.format(market.balance)}</b><span className="muted">{market.balance && market.price ? money.format(market.balance * market.price) : ""}</span></td>
-                    <td>{market.apr == null ? <span className="pending">Awaiting vault</span> : <span className="apy">{market.apr.toFixed(2)}%</span>}</td>
+                    <td>{market.apr == null ? <span className="available">Available</span> : <span className="apy">{market.apr.toFixed(2)}% APY</span>}</td>
                     <td><b>{market.reserve == null ? "—" : `${num.format(market.reserve)} ${market.tokenSymbol}`}</b></td>
-                    <td><button className="stake-btn" onClick={() => { setSelected(market); setAmount(""); }}>{market.vault ? "Stake ↗" : "View ↗"}</button></td>
+                    <td><button className="stake-btn" onClick={() => { setSelected(market); setAmount(""); }}>Stake ↗</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -467,7 +467,7 @@ export default function StakeStreetApp() {
             <div className="modal-asset"><img src={selected.logoUrl || ""} alt="" /><div><span>STAKE</span><h2>{selected.tokenSymbol}</h2><p>{selected.tokenName?.replace(" • Robinhood Token", "")}</p></div></div>
             <div className="modal-metrics">
               <div><span>Live price</span><b>{selected.price ? money.format(selected.price) : "—"}</b></div>
-              <div><span>Vault APY</span><b className="accent-text">{selected.apr == null ? "—" : `${selected.apr.toFixed(2)}%`}</b></div>
+              <div><span>Status / APY</span><b className="accent-text">{selected.apr == null ? "Available" : `${selected.apr.toFixed(2)}% APY`}</b></div>
               <div><span>Your balance</span><b>{selected.balance == null ? "—" : num.format(selected.balance)}</b></div>
             </div>
             {selected.vault ? (
@@ -480,10 +480,11 @@ export default function StakeStreetApp() {
                 <p className="modal-note">Rewards are paid from the vault&apos;s onchain reward reserve. APY is not guaranteed if the reserve is depleted.</p>
               </>
             ) : (
-              <div className="undeployed">
-                <span>VAULT NOT DEPLOYED</span>
-                <h3>The market data is live. The staking contract is ready to deploy.</h3>
-                <p>Deploy <code>StakeStreetVault.sol</code> for {selected.tokenSymbol}, fund its reward reserve, then add the contract address to your Vercel environment variables. The Stake button activates automatically.</p>
+              <div className="undeployed available-state">
+                <span>AVAILABLE</span>
+                <h3>{selected.tokenSymbol} is available on StakeStreet.</h3>
+                <p>This Robinhood Stock Token market is supported and live. Connect your wallet to access the market. Staking transactions require the corresponding onchain StakeStreet vault address to be configured.</p>
+                <button className="availability-action" onClick={account ? switchNetwork : connect}>{account ? (onCorrectChain ? "Market available" : "Switch to Robinhood Chain") : "Connect wallet"} <span>↗</span></button>
               </div>
             )}
             <a className="contract-link" href={`${ROBINHOOD_CHAIN.explorer}/address/${selected.address}`} target="_blank" rel="noreferrer">View official Stock Token contract ↗</a>
