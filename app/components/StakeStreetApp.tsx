@@ -233,7 +233,7 @@ export default function StakeStreetApp() {
 
       if (action === "stake") {
         const value = parseUnits(amount || "0", decimals);
-        if (value <= 0n) throw new Error("Enter an amount");
+        if (value <= BigInt(0)) throw new Error("Enter an amount");
         const allowance = await token.allowance(account, selected.vault);
         if (allowance < value) {
           showToast("Approve the Stock Token first…");
@@ -249,7 +249,7 @@ export default function StakeStreetApp() {
 
       if (action === "withdraw") {
         const value = parseUnits(amount || "0", decimals);
-        if (value <= 0n) throw new Error("Enter an amount");
+        if (value <= BigInt(0)) throw new Error("Enter an amount");
         showToast("Withdrawal submitted…");
         const tx = await vault.withdraw(value);
         await tx.wait();
