@@ -1,5 +1,2 @@
-import StakeStreetApp from "./components/StakeStreetApp";
-
-export default function Home() {
-  return <StakeStreetApp />;
-}
+// Compatibility shim. The real Next.js App Router page lives at app/page.tsx.
+export { default } from "./app/page";
