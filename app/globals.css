@@ -61,7 +61,7 @@ button { cursor: pointer; }
 .stats b { font-size: 19px; }
 .green { color: var(--green)!important; }
 .markets-section, .how { padding-bottom: 112px; }
-.section-head { display: flex; justify-content: space-between; align-items: end; gap: 40px; margin-bottom: 30px; }
+.section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; margin-bottom: 30px; }
 .section-head h2 { font-size: 38px; letter-spacing: -2px; margin: 10px 0 0; }
 .section-head > p { max-width: 500px; color: #7f8a83; line-height: 1.5; font-size: 13px; }
 .market-table-wrap { border: 1px solid var(--line); border-radius: 16px; overflow-x: auto; background: #0b100d; }
