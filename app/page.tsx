@@ -57,6 +57,7 @@ export default function StakeStreetApp() {
   const [busy, setBusy] = useState("");
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(true);
+  const [walletMenuOpen, setWalletMenuOpen] = useState(false);
 
   const onCorrectChain = chainId === ROBINHOOD_CHAIN.id;
 
@@ -64,6 +65,31 @@ export default function StakeStreetApp() {
     setToast(message);
     window.setTimeout(() => setToast(""), 4200);
   }, []);
+
+  const scrollTo = useCallback((id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const openExternal = useCallback((url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }, []);
+
+  const copyText = useCallback(async (value: string, label = "Copied") => {
+    try {
+      await navigator.clipboard.writeText(value);
+      showToast(`${label}.`);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = value;
+      el.style.position = "fixed";
+      el.style.opacity = "0";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      showToast(`${label}.`);
+    }
+  }, [showToast]);
 
   const switchNetwork = useCallback(async () => {
     const eth = getInjectedProvider();
@@ -104,6 +130,22 @@ export default function StakeStreetApp() {
     }
   }, [showToast, switchNetwork]);
 
+  const handleNetworkButton = useCallback(async () => {
+    if (onCorrectChain) {
+      showToast("Robinhood Chain is connected.");
+      return;
+    }
+    await switchNetwork();
+  }, [onCorrectChain, showToast, switchNetwork]);
+
+  const handleWalletButton = useCallback(async () => {
+    if (!account) {
+      await connect();
+      return;
+    }
+    setWalletMenuOpen((open) => !open);
+  }, [account, connect]);
+
   useEffect(() => {
     const eth = getInjectedProvider();
     if (!eth) return;
@@ -114,7 +156,7 @@ export default function StakeStreetApp() {
     }).catch(() => {});
     eth.request({ method: "eth_chainId" }).then((v) => setChainId(parseInt(v as string, 16))).catch(() => {});
 
-    const onAccounts = (...args: unknown[]) => setAccount(((args[0] as string[])?.[0]) || "");
+    const onAccounts = (...args: unknown[]) => { setAccount(((args[0] as string[])?.[0]) || ""); setWalletMenuOpen(false); };
     const onChain = (...args: unknown[]) => setChainId(parseInt(args[0] as string, 16));
     eth.on?.("accountsChanged", onAccounts);
     eth.on?.("chainChanged", onChain);
@@ -122,6 +164,18 @@ export default function StakeStreetApp() {
       eth.removeListener?.("accountsChanged", onAccounts);
       eth.removeListener?.("chainChanged", onChain);
     };
+  }, []);
+
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelected(null);
+        setWalletMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   useEffect(() => {
@@ -218,10 +272,28 @@ export default function StakeStreetApp() {
   const rewardsValue = useMemo(() => markets.reduce((sum, m) => sum + ((m.earned || 0) * (m.price || 0)), 0), [markets]);
 
   async function transact(action: "stake" | "withdraw" | "claim") {
-    if (!selected?.vault || !account) return;
+    if (!selected) return;
+    if (!account) {
+      showToast("Connect your wallet to continue.");
+      await connect();
+      return;
+    }
+    if (!onCorrectChain) {
+      showToast("Switching to Robinhood Chain…");
+      await switchNetwork();
+      return;
+    }
+    if (!selected.vault) {
+      showToast(`${selected.tokenSymbol} is available, but its StakeStreet vault address still needs to be configured.`);
+      return;
+    }
+    if (action === "claim" && !(selected.earned && selected.earned > 0)) {
+      showToast("There are no rewards to claim yet.");
+      return;
+    }
+
     const eth = getInjectedProvider();
-    if (!eth) return;
-    if (!onCorrectChain) return switchNetwork();
+    if (!eth) return showToast("No EVM wallet detected.");
 
     try {
       setBusy(action);
@@ -234,6 +306,7 @@ export default function StakeStreetApp() {
       if (action === "stake") {
         const value = parseUnits(amount || "0", decimals);
         if (value <= BigInt(0)) throw new Error("Enter an amount");
+        if (selected.balance != null && Number(amount) > selected.balance) throw new Error("Amount exceeds your wallet balance");
         const allowance = await token.allowance(account, selected.vault);
         if (allowance < value) {
           showToast("Approve the Stock Token first…");
@@ -250,6 +323,7 @@ export default function StakeStreetApp() {
       if (action === "withdraw") {
         const value = parseUnits(amount || "0", decimals);
         if (value <= BigInt(0)) throw new Error("Enter an amount");
+        if (selected.principal != null && Number(amount) > selected.principal) throw new Error("Amount exceeds your staked balance");
         showToast("Withdrawal submitted…");
         const tx = await vault.withdraw(value);
         await tx.wait();
@@ -273,6 +347,33 @@ export default function StakeStreetApp() {
     }
   }
 
+  async function handleFinalCta() {
+    if (!account) {
+      await connect();
+      return;
+    }
+    if (!onCorrectChain) {
+      await switchNetwork();
+      return;
+    }
+    await refreshWalletData();
+    scrollTo("portfolio");
+    showToast("Portfolio refreshed.");
+  }
+
+  async function handleAvailableMarket() {
+    if (!selected) return;
+    if (!account) {
+      await connect();
+      return;
+    }
+    if (!onCorrectChain) {
+      await switchNetwork();
+      return;
+    }
+    openExternal(`${ROBINHOOD_CHAIN.explorer}/address/${selected.address}`);
+  }
+
   return (
     <main className="site">
       <section className="hero" id="top">
@@ -293,10 +394,23 @@ export default function StakeStreetApp() {
             <a href="#how">How it works</a>
           </nav>
           <div className="nav-actions">
-            <button className={`network ${onCorrectChain ? "live" : ""}`} onClick={switchNetwork}>
-              <span className="dot" /> Robinhood Chain
+            <button className={`network ${onCorrectChain ? "live" : ""}`} onClick={handleNetworkButton}>
+              <span className="dot" /> {onCorrectChain ? "Robinhood Chain" : "Switch network"}
             </button>
-            <button className="wallet" onClick={connect}>{account ? shortAddress(account) : "Connect wallet"}</button>
+            <button className="wallet" onClick={handleWalletButton}>{account ? shortAddress(account) : "Connect wallet"}</button>
+            {account && walletMenuOpen && (
+              <div className="wallet-popover">
+                <div className="wallet-popover-head"><span>CONNECTED WALLET</span><button onClick={() => setWalletMenuOpen(false)} aria-label="Close wallet menu">×</button></div>
+                <b>{shortAddress(account)}</b>
+                <small>{onCorrectChain ? "Robinhood Chain · 4663" : `Chain ${chainId ?? "—"}`}</small>
+                <div className="wallet-popover-actions">
+                  <button onClick={() => copyText(account, "Wallet address copied")}>Copy address <span>↗</span></button>
+                  <button onClick={() => openExternal(`${ROBINHOOD_CHAIN.explorer}/address/${account}`)}>View on explorer <span>↗</span></button>
+                  <button onClick={async () => { await refreshWalletData(); showToast("Balances refreshed."); }}>Refresh balances <span>↻</span></button>
+                  {!onCorrectChain && <button onClick={switchNetwork}>Switch to Robinhood Chain <span>↗</span></button>}
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
@@ -398,7 +512,7 @@ export default function StakeStreetApp() {
                     <td><b>{market.balance == null ? (account ? "—" : "Connect") : num.format(market.balance)}</b><span className="muted">{market.balance && market.price ? money.format(market.balance * market.price) : ""}</span></td>
                     <td>{market.apr == null ? <span className="available">Available</span> : <span className="apy">{market.apr.toFixed(2)}% APY</span>}</td>
                     <td><b>{market.reserve == null ? "—" : `${num.format(market.reserve)} ${market.tokenSymbol}`}</b></td>
-                    <td><button className="stake-btn" onClick={() => { setSelected(market); setAmount(""); }}>Stake ↗</button></td>
+                    <td><button className="stake-btn" onClick={() => { setSelected(market); setAmount(""); setWalletMenuOpen(false); }}>Stake ↗</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -445,7 +559,7 @@ export default function StakeStreetApp() {
           <h2>Don&apos;t sell your winners.<br /><em>Stake them.</em></h2>
           <div className="final-bottom">
             <p>A new layer for stock exposure on Robinhood Chain.</p>
-            <button onClick={account ? switchNetwork : connect}>{account ? "Open your portfolio" : "Connect wallet"} <span>↗</span></button>
+            <button onClick={handleFinalCta}>{!account ? "Connect wallet" : !onCorrectChain ? "Switch network" : "Open your portfolio"} <span>↗</span></button>
           </div>
         </div>
       </section>
@@ -473,10 +587,10 @@ export default function StakeStreetApp() {
             {selected.vault ? (
               <>
                 <div className="position-box"><div><span>Currently staked</span><b>{num.format(selected.principal || 0)} {selected.tokenSymbol}</b></div><div><span>Earned</span><b className="accent-text">{num.format(selected.earned || 0)} {selected.tokenSymbol}</b></div></div>
-                <label className="amount-label"><span>Amount</span><button onClick={() => setAmount(String(selected.balance || 0))}>MAX</button></label>
+                <label className="amount-label"><span>Amount</span><span className="amount-shortcuts"><button onClick={() => setAmount(String(selected.balance || 0))}>MAX WALLET</button><button onClick={() => setAmount(String(selected.principal || 0))}>MAX STAKED</button></span></label>
                 <div className="amount-input"><input inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} /><span>{selected.tokenSymbol}</span></div>
-                <div className="modal-actions"><button disabled={!!busy || !account} onClick={() => transact("stake")}>{busy === "stake" ? "Confirming…" : "Stake shares"}</button><button className="outline" disabled={!!busy || !account} onClick={() => transact("withdraw")}>Withdraw</button></div>
-                <button className="claim" disabled={!!busy || !account || !(selected.earned && selected.earned > 0)} onClick={() => transact("claim")}>Claim {selected.earned ? `${num.format(selected.earned)} ${selected.tokenSymbol}` : "rewards"}</button>
+                <div className="modal-actions"><button disabled={!!busy} onClick={() => transact("stake")}>{busy === "stake" ? "Confirming…" : !account ? "Connect to stake" : "Stake shares"}</button><button className="outline" disabled={!!busy} onClick={() => transact("withdraw")}>{busy === "withdraw" ? "Confirming…" : "Withdraw"}</button></div>
+                <button className="claim" disabled={!!busy} onClick={() => transact("claim")}>{busy === "claim" ? "Confirming…" : `Claim ${selected.earned ? `${num.format(selected.earned)} ${selected.tokenSymbol}` : "rewards"}`}</button>
                 <p className="modal-note">Rewards are paid from the vault&apos;s onchain reward reserve. APY is not guaranteed if the reserve is depleted.</p>
               </>
             ) : (
@@ -484,7 +598,8 @@ export default function StakeStreetApp() {
                 <span>AVAILABLE</span>
                 <h3>{selected.tokenSymbol} is available on StakeStreet.</h3>
                 <p>This Robinhood Stock Token market is supported and live. Connect your wallet to access the market. Staking transactions require the corresponding onchain StakeStreet vault address to be configured.</p>
-                <button className="availability-action" onClick={account ? switchNetwork : connect}>{account ? (onCorrectChain ? "Market available" : "Switch to Robinhood Chain") : "Connect wallet"} <span>↗</span></button>
+                <button className="availability-action" onClick={handleAvailableMarket}>{!account ? "Connect wallet" : !onCorrectChain ? "Switch to Robinhood Chain" : "View market onchain"} <span>↗</span></button>
+                <button className="availability-secondary" onClick={() => copyText(selected.address, `${selected.tokenSymbol} contract copied`)}>Copy Stock Token contract <span>⧉</span></button>
               </div>
             )}
             <a className="contract-link" href={`${ROBINHOOD_CHAIN.explorer}/address/${selected.address}`} target="_blank" rel="noreferrer">View official Stock Token contract ↗</a>

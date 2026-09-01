@@ -36,7 +36,7 @@ Open `http://localhost:3000`.
 3. Add the environment variables from `.env.example`.
 4. Deploy.
 
-The site works with live Robinhood market data before vaults are deployed. Staking buttons become active only for vault addresses you configure.
+The site works with live Robinhood market data before vaults are deployed. Every visible UI control is wired: wallet/network controls, navigation, market modals, copy/explorer actions, balance refresh, MAX shortcuts, and final CTA. Real approve/stake/withdraw/claim transactions execute once the matching vault address is configured.
 
 ## Deploy a real vault
 
